@@ -1,25 +1,40 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-export const AuthApi = createApi({
-    reducerPath: 'AuthApi',
-    baseQuery: fetchBaseQuery({ baseUrl: import.meta.env.VITE_BACKEND_URL }),
+export const authApi = createApi({
+    reducerPath: 'authApi',
+    baseQuery: fetchBaseQuery({
+        baseUrl: import.meta.env.VITE_BASE_URL,
+        prepareHeaders: (headers) => {
+            const token = localStorage.getItem("token");
+            if (token) {
+                headers.set("Authorization", `Bearer ${token}`);
+            }
+            return headers;
+        },
+    }),
     endpoints: (builder) => ({
-        registerUser: builder.mutation<any,any>({
-            query: (obj) => ({
-                url:'/auth/register',
-                method:'POST',
-                body: obj
-            })
-        }),
-        loginUser: builder.mutation<any, any>({
-            query: (obj) => ({
+        loginUser: builder.mutation({
+            query: (body) => ({
                 url: '/auth/login',
                 method: 'POST',
-                body: obj
-            })
+                body,
+            }),
+        }),
+        registerUser: builder.mutation({
+            query: (body) => ({
+                url: '/auth/register',
+                method: 'POST',
+                body,
+            }),
+        }),
+        getProfile: builder.query({
+            query: () => '/auth/profile',
         }),
     }),
-})
+});
 
-
-export const { useRegisterUserMutation,useLoginUserMutation } = AuthApi
+export const {
+    useLoginUserMutation,
+    useRegisterUserMutation,
+    useGetProfileQuery,
+} = authApi;

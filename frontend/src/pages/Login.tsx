@@ -1,61 +1,56 @@
 import { ErrorMessage, Field, Formik } from 'formik'
-import { Button } from 'primereact/button' 
-import  { useRef } from 'react' 
+import { Button } from 'primereact/button'
+import { useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import * as yup from 'yup'
 import { useLoginUserMutation } from '../provider/queries/Auth.query'
 import { toast } from 'sonner'
 import ReCAPTCHA from "react-google-recaptcha";
 const Login = () => {
-const [LoginUser,LoginUserResponse] = useLoginUserMutation()
-const navigate = useNavigate()
-  type User={
-    token:string,
-    email:string,
-    password:string
+  const [LoginUser, LoginUserResponse] = useLoginUserMutation()
+  const navigate = useNavigate()
+  type User = {
+    token: string,
+    email: string,
+    password: string
   }
 
   //@ts-ignore
   const RecaptchaRef = useRef<any>();
 
-  const initialValues: User={
+  const initialValues: User = {
     token: '',
     email: '',
-    password:''
+    password: ''
   }
 
-  const validationSchema =yup.object({
+  const validationSchema = yup.object({
     email: yup.string().email("email must be valid").required("email is required"),
-    password: yup.string().min(5,"Password must be grather than 5 characters").required("password is required"),
+    password: yup.string().min(5, "Password must be grather than 5 characters").required("password is required"),
   })
 
-  const OnSubmitHandler = async(e:User,{resetForm}:any)=>{
-
+  const OnSubmitHandler = async (e: User, { resetForm }: any) => {
     try {
- 
-      const { data, error }: any = await LoginUser(e)
-      if (error) {
-        toast.error(error.data.message);
-        return
+      const { data, error }: any = await LoginUser(e);
 
+      if (error) {
+        const errorMsg =
+          error?.data?.message || error?.message || "Login failed. Please try again.";
+        toast.error(errorMsg);
+        return;
       }
 
-      // console.log(data,error);
-
-
       localStorage.setItem("token", data.token);
-
-
-      resetForm()
-      navigate("/")
+      resetForm();
+      navigate("/");
     } catch (error: any) {
-      // toast
-      toast.error(error.message);
-
-    }finally{
+      const fallbackError = error?.message || "Something went wrong";
+      toast.error(fallbackError);
+    } finally {
       RecaptchaRef.current.reset();
     }
-  }
+  };
+
 
   return (
 
@@ -82,7 +77,7 @@ const navigate = useNavigate()
                   <ReCAPTCHA
                     ref={RecaptchaRef}
                     sitekey={import.meta.env.VITE_SITE_KEY}
-                    onChange={(e) => { setFieldValue('token',e)}}
+                    onChange={(e) => { setFieldValue('token', e) }}
                   />
                 </div>
                 <div className="mb-3 py-1 flex items-center justify-center">
@@ -101,7 +96,7 @@ const navigate = useNavigate()
           )}
         </Formik>
       </div>
-    
+
     </>
 
   )
